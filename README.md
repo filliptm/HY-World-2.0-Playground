@@ -455,6 +455,13 @@ If you find HunyuanWorld 2.0 useful for your research, please cite:
   journal={arXiv preprint},
   year={2026}
 }
+
+@article{hunyuanworld2025tencent,
+    title={HunyuanWorld 1.0: Generating Immersive, Explorable, and Interactive 3D Worlds from Words or Pixels},
+    author={Team HunyuanWorld},
+    year={2025},
+    journal={arXiv preprint}
+}
 ```
 
 

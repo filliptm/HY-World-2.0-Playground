@@ -456,6 +456,13 @@ torchrun --nproc_per_node=2 -m hyworld2.worldrecon.gradio_app \
   journal={arXiv preprint},
   year={2026}
 }
+
+@article{hunyuanworld2025tencent,
+    title={HunyuanWorld 1.0: Generating Immersive, Explorable, and Interactive 3D Worlds from Words or Pixels},
+    author={Team HunyuanWorld},
+    year={2025},
+    journal={arXiv preprint}
+}
 ```
 
 
