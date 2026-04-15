@@ -102,7 +102,7 @@ Existing world models, such as Genie 3, Cosmos, and HY-World 1.5 (WorldPlay+Worl
   Powered by **WorldMirror 2.0**, a unified feed-forward model that predicts dense point clouds, depth maps, surface normals, camera parameters, and 3DGS from multi-view images or casual videos in a single forward pass. Supports flexible-resolution inference (50K–500K pixels) with SOTA accuracy. Capture a video, get a digital twin.
 
 <p align="center">
-  <img src="assets/recon.gif" width="95%">
+  <img src="assets/recon_en.gif" width="95%">
 </p>
 
 - **Interactive Character Exploration**
