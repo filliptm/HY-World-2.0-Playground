@@ -45,8 +45,8 @@ The model weights (~2.4 GB) download from HuggingFace on the first run and cache
 
 | Change | Why |
 | --- | --- |
-| torch 2.7+cu128 (not 2.4+cu124) | Blackwell sm_120 support — torch 2.4 kernels cap at sm_90 |
-| `TORCH_CUDA_ARCH_LIST=9.0+PTX` at runtime | gsplat compiles for sm_90, driver JITs PTX → sm_120 at first call |
+| torch 2.7+cu128 (not 2.4+cu124) | Native kernels for Turing → Blackwell (upstream's torch 2.4 caps at sm_90) |
+| Auto-detected `TORCH_CUDA_ARCH_LIST` at install time | `scripts/setup_gpu.py` picks the right arch per GPU and writes `.cuda_arch`; install + runtime stay in sync. Blackwell gets sm_90+PTX (driver JITs at first call) since nvcc 12.6 doesn't know compute_120. |
 | MSVC-compatible flags in gsplat build | Upstream passes `-Wno-attributes` (GCC) to `cl.exe` |
 | flash-attn → PyTorch SDPA fallback | No flash-attn wheel for torch 2.7+cu128 on Windows |
 | `tempfile.gettempdir()` for video frames | Upstream hardcoded `/tmp` (doesn't exist on Windows) |
@@ -57,11 +57,24 @@ The model weights (~2.4 GB) download from HuggingFace on the first run and cache
 
 ## Requirements
 
-- **Python 3.10** (the upstream gsplat wheel is `cp310`; the Windows installer requires it via `py -3.10`)
+- **Python 3.10** (the gsplat wheel is `cp310`; the Windows installer uses `py -3.10`)
 - **Node 18+** for Vite
-- **CUDA 12.6+ toolkit** (NVCC) if building gsplat from source on a GPU without a prebuilt wheel. Blackwell works via PTX JIT from CUDA 12.6; native compute_120 requires CUDA 12.8.
-- **NVIDIA GPU with ~4 GB VRAM** minimum, more for large scenes. Tested on RTX PRO 6000 Blackwell (97 GB).
-- **Visual Studio 2022 Build Tools** on Windows (for the gsplat compile)
+- **NVIDIA driver 550+** (for CUDA 12.8 runtime)
+- **NVIDIA GPU** — any generation from Turing onwards. The install script auto-detects your GPU and compiles gsplat for the right arch:
+
+  | Generation | Example cards | Compute capability |
+  | --- | --- | --- |
+  | Turing | RTX 20xx, T4, GTX 16xx, Quadro RTX | sm_75 |
+  | Ampere | RTX 30xx, A100, A40, A6000 | sm_80 / sm_86 |
+  | Ada Lovelace | RTX 40xx, L40 | sm_89 |
+  | Hopper | H100, H200 | sm_90 |
+  | Blackwell | RTX 50xx, RTX PRO 6000 Blackwell, B200 | sm_100 / sm_120 (via sm_90 PTX JIT) |
+
+  Pascal (10xx) and Volta (V100) also work — the script falls back to a broader arch list that includes them.
+
+- **~6 GB VRAM** minimum for small scenes; **8–12 GB+** recommended for long-video or 32-frame reconstructions
+- **CUDA 12.6+ toolkit** (NVCC) available on PATH for the gsplat build step
+- **Visual Studio 2022 Build Tools** on Windows (C++ workload) — needed for the MSVC compiler gsplat's CUDA extension calls out to
 
 ## Architecture
 

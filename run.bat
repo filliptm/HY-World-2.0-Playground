@@ -6,6 +6,12 @@ pushd "%~dp0"
 set BACKEND_PORT=8000
 set FRONTEND_PORT=5173
 
+:: Read the arch list baked in at install time (falls back to Blackwell-safe default)
+set TORCH_CUDA_ARCH_LIST=9.0+PTX
+if exist ".cuda_arch" (
+    set /p TORCH_CUDA_ARCH_LIST=<.cuda_arch
+)
+
 echo === Killing processes on ports %BACKEND_PORT% and %FRONTEND_PORT% ===
 for %%P in (%BACKEND_PORT% %FRONTEND_PORT%) do (
     for /f "tokens=5" %%a in ('netstat -ano ^| findstr ":%%P " ^| findstr "LISTENING"') do (
@@ -24,8 +30,9 @@ if not exist "app\frontend\node_modules" (
 )
 
 echo.
+echo GPU arch: %TORCH_CUDA_ARCH_LIST%
 echo === Launching backend on :%BACKEND_PORT% ===
-start "hy-world backend" cmd /k "call .venv\Scripts\activate.bat && set TORCH_CUDA_ARCH_LIST=9.0+PTX && cd app\backend && python -m uvicorn main:app --host 0.0.0.0 --port %BACKEND_PORT%"
+start "hy-world backend" cmd /k "call .venv\Scripts\activate.bat && set TORCH_CUDA_ARCH_LIST=%TORCH_CUDA_ARCH_LIST% && cd app\backend && python -m uvicorn main:app --host 0.0.0.0 --port %BACKEND_PORT%"
 
 echo === Launching frontend on :%FRONTEND_PORT% ===
 start "hy-world frontend" cmd /k "cd app\frontend && npm run dev"

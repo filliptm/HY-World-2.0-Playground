@@ -5,10 +5,16 @@ cd "$(dirname "$0")"
 BACKEND_PORT=8000
 FRONTEND_PORT=5173
 
+# Read the arch list baked in at install time (falls back to Blackwell-safe default)
+if [ -f ".cuda_arch" ]; then
+  CUDA_ARCH=$(cat .cuda_arch)
+else
+  CUDA_ARCH="9.0+PTX"
+fi
+
 kill_port() {
   local port="$1"
   if [ "$OS" = "Windows_NT" ]; then
-    # Windows via git-bash: use netstat + taskkill
     local pids
     pids=$(netstat -ano 2>/dev/null | awk -v p=":$port " '$0 ~ p && /LISTENING/ {print $5}' | sort -u)
     for pid in $pids; do
@@ -56,8 +62,9 @@ cleanup() {
 }
 trap cleanup EXIT INT TERM
 
+echo "GPU arch: $CUDA_ARCH"
 echo "=== Launching backend on :$BACKEND_PORT ==="
-export TORCH_CUDA_ARCH_LIST="9.0+PTX"
+export TORCH_CUDA_ARCH_LIST="$CUDA_ARCH"
 ( cd app/backend && python -m uvicorn main:app --host 0.0.0.0 --port "$BACKEND_PORT" ) &
 BACKEND_PID=$!
 

@@ -16,10 +16,10 @@ else
 fi
 
 if [ ! -d ".venv" ]; then
-  echo "[1/6] Creating venv with Python 3.10..."
+  echo "[1/8] Creating venv with Python 3.10..."
   $PY -m venv .venv
 else
-  echo "[1/6] venv already exists — reusing."
+  echo "[1/8] venv already exists — reusing."
 fi
 
 # Activate (Windows git-bash uses Scripts, Unix uses bin)
@@ -37,10 +37,10 @@ fi
 
 $PYBIN -m pip install --upgrade pip wheel setuptools
 
-echo "[2/6] Installing PyTorch 2.4 + CUDA 12.4..."
-$PIP install torch==2.4.0 torchvision==0.19.0 --index-url https://download.pytorch.org/whl/cu124
+echo "[2/8] Installing PyTorch 2.7 + CUDA 12.8 (Blackwell/Hopper/Ada/Ampere/Turing support)..."
+$PIP install torch==2.7.0 torchvision==0.22.0 torchaudio==2.7.0 --index-url https://download.pytorch.org/whl/cu128
 
-echo "[3/6] Installing WorldMirror deps..."
+echo "[3/8] Installing WorldMirror deps..."
 if [ "$OS" = "Windows_NT" ]; then
   $PYBIN scripts/patch_requirements_windows.py
   $PIP install -r requirements.windows.txt
@@ -48,14 +48,27 @@ else
   $PIP install -r requirements.txt
 fi
 
-echo "[4/6] Installing backend deps (FastAPI)..."
+echo "[4/8] Installing backend deps (FastAPI)..."
 $PIP install -r app/backend/requirements.txt
 
-echo "[5/6] Attempting FlashAttention-2 (skippable)..."
-$PIP install flash-attn --no-build-isolation || \
-  echo "  WARNING: flash-attn install failed. Inference may run with PyTorch SDPA fallback."
+echo "[5/8] Detecting GPU..."
+$PYBIN scripts/setup_gpu.py --write
+CUDA_ARCH=$(cat .cuda_arch)
+echo "  → TORCH_CUDA_ARCH_LIST=$CUDA_ARCH"
 
-echo "[6/6] Installing frontend deps..."
+echo "[6/8] Pre-compiling gsplat CUDA kernels for your GPU (first time only; can take 2-10 minutes)..."
+export TORCH_CUDA_ARCH_LIST="$CUDA_ARCH"
+if $PYBIN -c "from gsplat.cuda._backend import _C; print('gsplat ready')"; then
+  echo "  → gsplat compiled OK"
+else
+  echo "  WARNING: gsplat pre-compile failed. It will retry on first inference."
+fi
+
+echo "[7/8] Attempting FlashAttention-2 (skippable — SDPA fallback covers bf16)..."
+$PIP install flash-attn --no-build-isolation 2>/dev/null || \
+  echo "  → flash-attn not available; will use PyTorch SDPA fallback."
+
+echo "[8/8] Installing frontend deps..."
 (cd app/frontend && npm install)
 
 echo

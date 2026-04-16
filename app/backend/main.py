@@ -21,12 +21,20 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 
 import os as _os
-# Blackwell (sm_120) workaround: CUDA 12.6 nvcc doesn't recognize compute_120.
-# Force gsplat's JIT rebuild to target sm_90 + PTX; driver JITs PTX → sm_120.
-_os.environ.setdefault("TORCH_CUDA_ARCH_LIST", "9.0+PTX")
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT))
+
+# Keep the gsplat build-time and run-time arch lists in sync. `install.*` runs
+# `scripts/setup_gpu.py --write`, which detects the GPU and writes the right
+# TORCH_CUDA_ARCH_LIST to `.cuda_arch`. If the user already set the env var
+# themselves (setdefault respects that), leave it alone.
+_arch_file = REPO_ROOT / ".cuda_arch"
+if _arch_file.exists():
+    _os.environ.setdefault("TORCH_CUDA_ARCH_LIST", _arch_file.read_text().strip())
+else:
+    # Blackwell-safe fallback: sm_90 cubin + PTX that the driver JITs to sm_100/120.
+    _os.environ.setdefault("TORCH_CUDA_ARCH_LIST", "9.0+PTX")
 
 APP_ROOT = Path(__file__).resolve().parent
 JOBS_DIR = APP_ROOT / "jobs"
