@@ -1,0 +1,27 @@
+HY-World 2.0 Playground
+-----------------------
+
+This repository distributes and modifies Tencent HY-WORLD 2.0.
+
+Tencent HY-WORLD 2.0 is licensed under the Tencent HY-WORLD 2.0 Community
+License Agreement. Copyright (c) 2026 Tencent. All Rights Reserved.
+The trademark rights of "Tencent HY" are owned by Tencent or its affiliate.
+
+Upstream source:
+  https://github.com/Tencent-Hunyuan/HY-World-2.0
+
+The following files are modifications of upstream sources (see the comments
+at the top of each file for the specifics of what changed and why):
+
+  hyworld2/worldrecon/hyworldmirror/models/layers/attention.py
+  hyworld2/worldrecon/hyworldmirror/utils/inference_utils.py
+
+All new code in this repository — specifically the `app/`, `scripts/`,
+`install.*`, and `run.*` files, and this repository's README — is authored
+by filliptm and licensed under the MIT license (see LICENSE-playground.md).
+
+This product is "Powered by Tencent HY".
+
+Note on territory: the upstream Tencent HY-WORLD 2.0 Community License
+excludes the European Union, the United Kingdom, and South Korea.
+Availability of this repository is subject to those same restrictions.

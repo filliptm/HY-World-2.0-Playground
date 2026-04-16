@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HY-World 2.0 · WorldMirror Playground</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <div id="app">
+      <aside class="sidebar">
+        <header class="brand">
+          <span class="brand-mark" data-icon="brand"></span>
+          <div class="brand-text">
+            <h1>HY-World 2.0</h1>
+            <p class="brand-sub">WorldMirror Playground</p>
+          </div>
+          <span id="gpu-chip" class="gpu-chip" title="GPU status">
+            <span class="dot"></span><span class="gpu-text">…</span>
+          </span>
+        </header>
+
+        <section class="panel">
+          <h2 class="section-label">Input</h2>
+          <div class="seg-tabs" role="tablist" id="input-tabs">
+            <button class="seg active" role="tab" data-tab="example">Examples</button>
+            <button class="seg" role="tab" data-tab="upload">Upload</button>
+          </div>
+          <div class="tab-body" data-body="example">
+            <div id="example-search-wrap" class="search-row">
+              <span class="search-icon" data-icon="search"></span>
+              <input id="example-search" type="search" placeholder="Filter scenes…" />
+            </div>
+            <div id="example-grid" class="example-grid">
+              <div class="example-grid-empty">Loading examples…</div>
+            </div>
+          </div>
+          <div class="tab-body hidden" data-body="upload">
+            <label id="drop-zone" class="drop-zone" for="upload-files">
+              <span class="drop-icon" data-icon="upload"></span>
+              <strong>Drop images or a video</strong>
+              <small>or click to browse · JPG, PNG, MP4, MOV</small>
+              <input id="upload-files" type="file" multiple
+                     accept="image/*,video/*" hidden />
+            </label>
+            <div id="upload-preview" class="upload-preview"></div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2 class="section-label">Settings</h2>
+          <label>
+            <span class="label-text">Resolution <small class="label-hint">target_size</small></span>
+            <input type="number" name="target_size" value="952" min="256" max="2048" step="14" />
+          </label>
+          <label class="check">
+            <input type="checkbox" name="save_rendered" />
+            <span>Render fly-through video</span>
+          </label>
+        </section>
+
+        <details class="panel adv-panel">
+          <summary>
+            <span class="section-label">Advanced</span>
+            <span class="chev" data-icon="chevronDown"></span>
+          </summary>
+
+          <details class="sub">
+            <summary>Video input</summary>
+            <label>
+              <span class="label-text">fps</span>
+              <input type="number" name="fps" value="1" min="1" max="30" />
+            </label>
+            <label>
+              <span class="label-text">Strategy</span>
+              <select name="video_strategy">
+                <option value="new" selected>motion-aware</option>
+                <option value="old">uniform fps</option>
+              </select>
+            </label>
+            <label>
+              <span class="label-text">Min frames</span>
+              <input type="number" name="video_min_frames" value="1" min="1" max="128" />
+            </label>
+            <label>
+              <span class="label-text">Max frames</span>
+              <input type="number" name="video_max_frames" value="32" min="1" max="128" />
+            </label>
+          </details>
+
+          <details class="sub" open>
+            <summary>Outputs</summary>
+            <label class="check"><input type="checkbox" name="save_gs" checked /> <span>3D Gaussian Splats</span></label>
+            <label class="check"><input type="checkbox" name="save_points" checked /> <span>Point cloud</span></label>
+            <label class="check"><input type="checkbox" name="save_depth" checked /> <span>Depth maps</span></label>
+            <label class="check"><input type="checkbox" name="save_normal" checked /> <span>Surface normals</span></label>
+            <label class="check"><input type="checkbox" name="save_camera" checked /> <span>Cameras</span></label>
+            <label class="check"><input type="checkbox" name="save_colmap" /> <span>COLMAP sparse</span></label>
+            <label class="check"><input type="checkbox" name="save_conf" /> <span>Confidence maps</span></label>
+            <label class="check"><input type="checkbox" name="save_sky_mask" /> <span>Sky masks</span></label>
+          </details>
+
+          <details class="sub">
+            <summary>Masks</summary>
+            <label class="check"><input type="checkbox" name="apply_sky_mask" checked /> <span>apply_sky_mask</span></label>
+            <label class="check"><input type="checkbox" name="apply_edge_mask" checked /> <span>apply_edge_mask</span></label>
+            <label class="check"><input type="checkbox" name="apply_confidence_mask" /> <span>apply_confidence_mask</span></label>
+            <label>
+              <span class="label-text">Sky mask source</span>
+              <select name="sky_mask_source">
+                <option value="auto" selected>auto</option>
+                <option value="model">model</option>
+                <option value="external">external</option>
+              </select>
+            </label>
+            <label>
+              <span class="label-text">Model sky threshold</span>
+              <input type="number" name="model_sky_threshold" value="0.45" step="0.01" min="0" max="1" />
+            </label>
+            <label>
+              <span class="label-text">Confidence percentile</span>
+              <input type="number" name="confidence_percentile" value="10" step="0.5" min="0" max="100" />
+            </label>
+            <label>
+              <span class="label-text">Edge normal threshold</span>
+              <input type="number" name="edge_normal_threshold" value="1.0" step="0.1" min="0" max="3" />
+            </label>
+            <label>
+              <span class="label-text">Edge depth threshold</span>
+              <input type="number" name="edge_depth_threshold" value="0.03" step="0.005" min="0" max="1" />
+            </label>
+          </details>
+
+          <details class="sub">
+            <summary>Compression</summary>
+            <label class="check"><input type="checkbox" name="compress_pts" checked /> <span>compress points</span></label>
+            <label>
+              <span class="label-text">Max points</span>
+              <input type="number" name="compress_pts_max_points" value="2000000" min="10000" max="20000000" step="10000" />
+            </label>
+            <label>
+              <span class="label-text">Point voxel size</span>
+              <input type="number" name="compress_pts_voxel_size" value="0.002" step="0.001" min="0" max="1" />
+            </label>
+            <label>
+              <span class="label-text">Max resolution</span>
+              <input type="number" name="max_resolution" value="1920" min="256" max="4096" step="32" />
+            </label>
+            <label>
+              <span class="label-text">Max gaussians</span>
+              <input type="number" name="compress_gs_max_points" value="5000000" min="10000" max="50000000" step="10000" />
+            </label>
+          </details>
+
+          <details class="sub">
+            <summary>Rendered video</summary>
+            <label>
+              <span class="label-text">Interp / pair</span>
+              <input type="number" name="render_interp_per_pair" value="15" min="1" max="60" />
+            </label>
+            <label class="check"><input type="checkbox" name="render_depth" /> <span>also render depth</span></label>
+          </details>
+        </details>
+      </aside>
+
+      <main class="main">
+        <section class="status-strip">
+          <div class="status-left">
+            <div id="job-status" class="status-pill idle"><span class="pill-dot"></span><span class="pill-text">idle</span></div>
+            <div id="job-id" class="status-id"></div>
+          </div>
+          <div id="job-stats" class="stat-chips"></div>
+          <div class="status-right">
+            <button id="btn-rerun" class="btn ghost small" hidden>
+              <span data-icon="refresh"></span> Rerun
+            </button>
+            <a id="job-download" class="btn ghost small" hidden>
+              <span data-icon="download"></span> .zip
+            </a>
+          </div>
+        </section>
+
+        <nav class="view-tabs" id="view-tabs" role="tablist">
+          <button class="view-tab active" role="tab" data-view="splat">
+            <span data-icon="splat"></span><span>Splat</span>
+          </button>
+          <button class="view-tab" role="tab" data-view="points">
+            <span data-icon="points"></span><span>Points</span>
+          </button>
+          <button class="view-tab" role="tab" data-view="depth">
+            <span data-icon="depth"></span><span>Depth</span>
+          </button>
+          <button class="view-tab" role="tab" data-view="normal">
+            <span data-icon="normal"></span><span>Normals</span>
+          </button>
+          <button class="view-tab" role="tab" data-view="video">
+            <span data-icon="video"></span><span>Video</span>
+          </button>
+        </nav>
+
+        <section class="view" id="view-splat">
+          <div id="splat-canvas" class="canvas"></div>
+          <div class="viewer-chrome">
+            <label class="toggle-chip">
+              <input type="checkbox" id="toggle-frustums" />
+              <span data-icon="camera"></span>
+              <span>Cameras</span>
+            </label>
+          </div>
+          <div class="view-hint">drag to orbit · wheel to zoom · right-drag to pan</div>
+        </section>
+
+        <section class="view hidden" id="view-points">
+          <div id="points-canvas" class="canvas"></div>
+        </section>
+
+        <section class="view hidden" id="view-depth">
+          <div id="depth-grid" class="image-grid"></div>
+        </section>
+
+        <section class="view hidden" id="view-normal">
+          <div id="normal-grid" class="image-grid"></div>
+        </section>
+
+        <section class="view hidden" id="view-video">
+          <div id="video-wrap" class="video-wrap">
+            <video id="rendered-video" controls loop></video>
+            <p id="video-note" class="muted">Enable "Render fly-through video" to produce one.</p>
+          </div>
+        </section>
+
+        <section class="drawer" id="drawer" data-open="false">
+          <header class="drawer-head">
+            <nav class="drawer-tabs" id="drawer-tabs" role="tablist">
+              <button class="drawer-tab active" role="tab" data-drawer="log">
+                <span data-icon="terminal"></span><span>Log</span>
+              </button>
+              <button class="drawer-tab" role="tab" data-drawer="files">
+                <span data-icon="folder"></span><span>Files</span>
+                <span id="files-count" class="count-pill"></span>
+              </button>
+              <button class="drawer-tab" role="tab" data-drawer="cameras">
+                <span data-icon="camera"></span><span>Cameras</span>
+              </button>
+              <button class="drawer-tab" role="tab" data-drawer="history">
+                <span data-icon="clock"></span><span>History</span>
+                <span id="history-count" class="count-pill"></span>
+              </button>
+            </nav>
+            <button id="drawer-toggle" class="btn icon ghost" aria-label="Toggle drawer">
+              <span data-icon="chevronUp"></span>
+            </button>
+          </header>
+          <div class="drawer-body">
+            <div class="drawer-pane active" data-pane="log">
+              <pre id="log-output" class="log-output"></pre>
+            </div>
+            <div class="drawer-pane" data-pane="files">
+              <ul id="files-list" class="files-list"></ul>
+            </div>
+            <div class="drawer-pane" data-pane="cameras">
+              <pre id="cameras-json" class="json-output"></pre>
+            </div>
+            <div class="drawer-pane" data-pane="history">
+              <div id="history-list" class="history-list"></div>
+            </div>
+          </div>
+        </section>
+
+        <div class="run-bar">
+          <button id="btn-warmup" class="btn ghost small">
+            <span data-icon="zap"></span> Warm up
+          </button>
+          <button id="btn-run" class="btn primary">
+            <span data-icon="play"></span>
+            <span>Run inference</span>
+          </button>
+        </div>
+      </main>
+
+      <!-- Depth/normal inspector modal -->
+      <div id="inspector" class="modal" hidden>
+        <div class="modal-backdrop" data-close></div>
+        <div class="modal-content">
+          <header class="modal-head">
+            <h3 id="inspector-title">—</h3>
+            <div class="modal-head-actions">
+              <button id="inspector-prev" class="btn icon ghost" aria-label="Previous"><span data-icon="chevronLeft"></span></button>
+              <button id="inspector-next" class="btn icon ghost" aria-label="Next"><span data-icon="chevronRight"></span></button>
+              <a id="inspector-download" class="btn icon ghost" download aria-label="Download"><span data-icon="download"></span></a>
+              <button class="btn icon ghost" data-close aria-label="Close"><span data-icon="close"></span></button>
+            </div>
+          </header>
+          <div class="inspector-body">
+            <figure>
+              <img id="inspector-source" alt="source frame" />
+              <figcaption>Source frame</figcaption>
+            </figure>
+            <figure>
+              <img id="inspector-output" alt="output map" />
+              <figcaption id="inspector-output-caption">Output</figcaption>
+            </figure>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

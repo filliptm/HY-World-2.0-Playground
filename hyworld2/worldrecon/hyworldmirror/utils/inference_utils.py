@@ -118,13 +118,28 @@ def prepare_images_to_tensor(file_paths, resize_strategy="crop", target_size=518
 def prepare_input(input_path, target_size=518, fps=1,
                   video_strategy="new", min_frames=1, max_frames=64,
                   temp_dir=None):
-    """Read images or extract video frames. Returns (img_paths, subdir_name)."""
+    """Read images or extract video frames. Returns (img_paths, subdir_name).
+
+    MODIFIED from upstream Tencent HY-WORLD 2.0 by filliptm (2026-04):
+      - Use `tempfile.gettempdir()` instead of the hardcoded `/tmp`, which
+        doesn't exist on Windows.
+      - Sanitize the video stem (strip forbidden chars + trailing dots/spaces,
+        cap length) before using it as a directory name, so videos with names
+        like `Foo...mp4` don't cause a mkdir/open path desync on Windows.
+    See repo NOTICE for upstream attribution.
+    """
+    import re
+    import tempfile as _tempfile
     input_path = Path(input_path)
     video_exts = ['.mp4', '.avi', '.mov', '.webm', '.gif']
 
     if input_path.is_file() and input_path.suffix.lower() in video_exts:
-        subdir_name = input_path.stem
-        frames_dir = Path(temp_dir or "/tmp") / f"frames_{subdir_name}"
+        # Sanitize for Windows: forbid <>:"/\|?*, trailing dots/spaces, cap length.
+        raw_stem = input_path.stem
+        safe_stem = re.sub(r'[<>:"/\\|?*]', "_", raw_stem).rstrip(" .")[:80] or "video"
+        subdir_name = safe_stem
+        root_tmp = Path(temp_dir) if temp_dir else Path(_tempfile.gettempdir())
+        frames_dir = root_tmp / f"frames_{subdir_name}"
         frames_dir.mkdir(parents=True, exist_ok=True)
         min_f = max(1, min_frames)
         max_f = min(64, max_frames)

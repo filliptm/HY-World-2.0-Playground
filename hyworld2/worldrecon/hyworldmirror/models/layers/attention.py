@@ -1,6 +1,12 @@
 # References:
 #   https://github.com/facebookresearch/dino/blob/master/vision_transformer.py
 #   https://github.com/rwightman/pytorch-image-models/tree/master/timm/models/vision_transformer.py
+#
+# MODIFIED from upstream Tencent HY-WORLD 2.0 by filliptm (2026-04):
+#   - Made flash-attn optional with a PyTorch SDPA fallback on bf16/fp16 so
+#     the pipeline runs on platforms without a prebuilt flash-attn wheel
+#     (notably Windows on torch 2.7+cu128 / Blackwell GPUs).
+# See repo NOTICE for upstream attribution.
 
 from torch import Tensor
 from torch import nn
@@ -10,9 +16,17 @@ import torch
 try:
     from flash_attn_interface import flash_attn_func as flash_attn_func_v3
     _USE_FLASH_ATTN_V3 = True
+    _HAS_FLASH_ATTN = True
 except ImportError:
-    from flash_attn.flash_attn_interface import flash_attn_func as flash_attn_func_v2
-    _USE_FLASH_ATTN_V3 = False
+    try:
+        from flash_attn.flash_attn_interface import flash_attn_func as flash_attn_func_v2
+        _USE_FLASH_ATTN_V3 = False
+        _HAS_FLASH_ATTN = True
+    except ImportError:
+        _USE_FLASH_ATTN_V3 = False
+        _HAS_FLASH_ATTN = False
+        flash_attn_func_v2 = None
+        flash_attn_func_v3 = None
 from ...comm.padding import minimal_pad_to_divisible, depad_by_length, pad_by_length
 import torch.distributed as dist
 from ...comm.communication import _All2All, _Allgather
@@ -55,7 +69,7 @@ class Attention(nn.Module):
         return q, k, v, B, N, C
 
     def _apply_attention(self, q: Tensor, k: Tensor, v: Tensor) -> Tensor:
-        if q.dtype==torch.bfloat16 or q.dtype==torch.float16:
+        if _HAS_FLASH_ATTN and (q.dtype == torch.bfloat16 or q.dtype == torch.float16):
             if q.is_contiguous():
                 q = q.transpose(1,2)
             else:
@@ -77,6 +91,7 @@ class Attention(nn.Module):
             else:
                 x = x.transpose(1, 2).contiguous()
         else:
+            # Fallback: PyTorch SDPA (cuDNN Flash backend on SM>=80, including Blackwell).
             x = F.scaled_dot_product_attention(q, k, v, dropout_p=self.attn_drop.p if self.training else 0.0)
         return x
 

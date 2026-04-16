@@ -1,9 +1,38 @@
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
-.gradio/
+*.egg-info/
+.venv/
+.pytest_cache/
+
+# Node
+node_modules/
+dist/
+.vite/
+
+# App runtime (per-run outputs; can grow GBs)
+app/backend/jobs/
+app/backend/uploads/
 inference_output/
 gradio_demo_output/
-skyseg.onnx
+
+# Workspace / tool state
+.claude/
+.gradio/
+
+# Local env / secrets
+.env
+.env.*
+
+# Model weights (auto-downloaded from HF to ~/.cache/)
 *.safetensors
 *.ckpt
+skyseg.onnx
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.log
