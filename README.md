@@ -81,7 +81,7 @@ run.{bat,sh}                    # kill ports, launch backend + frontend
 
 ## License
 
-- **Model + upstream code** (`hyworld2/`, `examples/`, `assets/` except `radme.png`, `License.txt`, `DOCUMENTATION.md`, etc.): **Tencent HY-WORLD 2.0 Community License Agreement**. See `License.txt` and `NOTICE`. **Not available in the EU, UK, or South Korea.**
+- **Model + upstream code** (`hyworld2/`, `examples/`, `License.txt`): **Tencent HY-WORLD 2.0 Community License Agreement**. See `License.txt` and `NOTICE`. **Not available in the EU, UK, or South Korea.**
 - **Playground code** added in this repo (`app/`, `scripts/`, `install.*`, `run.*`, this README, `NOTICE`): **MIT** — see `LICENSE-playground.md`.
 
 Powered by **Tencent HY**. Built by [filliptm](https://github.com/filliptm) / [Machine Delusions](https://www.patreon.com/Machinedelusions).

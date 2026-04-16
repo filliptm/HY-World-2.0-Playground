@@ -22,8 +22,8 @@ SOFTWARE.
 
 This MIT license covers only the original code added by filliptm in this
 repository (notably the `app/`, `scripts/`, `install.*`, `run.*` files, this
-repository's README, and the `NOTICE` file). The upstream Tencent HY-WORLD 2.0
-code in this repository (everything under `hyworld2/`, `examples/`, `assets/`
-except `assets/radme.png`, the included `License.txt`, and upstream docs)
-remains governed by the Tencent HY-WORLD 2.0 Community License Agreement.
-See `License.txt` and `NOTICE`.
+repository's README, the `assets/radme.png` banner, and the `NOTICE` file).
+The upstream Tencent HY-WORLD 2.0 code in this repository (everything under
+`hyworld2/`, `examples/`, and the included `License.txt`) remains governed
+by the Tencent HY-WORLD 2.0 Community License Agreement. See `License.txt`
+and `NOTICE`.
